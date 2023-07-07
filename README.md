@@ -13,28 +13,31 @@ Django, Django REST Framework, Node.js
 Клонировать репозиторий и перейти в него в командной строке:
 
 ```
-git clone https://github.com/Maniackaa/kittygram_final.git
+git clone https://github.com/Maniackaa/foodgram
 ```
 
 ```
-cd kittygram_final
+cd foodgram/infra
 ```
-В папку kittygram_final создать файл .env
+В папку infra создать файл .env
 ```
 nano .env
 ```
 
 в котором указать переменные, например:
 ```
-POSTGRES_USER=django
-POSTGRES_PASSWORD=12345
-POSTGRES_DB=django
-DB_HOST=db
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=111333
+POSTGRES_DB=postgres_db
+DB_HOST=db_postgres_container
+#DB_HOST=localhost
 DB_PORT=5432
-SECRET_KEY='django-insecure-5!@(1#jwja4*pmu@0t2@r$!m8*g!tftwuotz4a527mqz99-u15'
-DEBUG=False
-ALLOWED_HOSTS='158.160.69.22,127.0.0.1,localhost,*' # Обязательно указать адрес сервера
-NGINX_PORT=9000
+PGADMIN_DEFAULT_EMAIL=maniac_kaa@mail.ru
+PGADMIN_DEFAULT_PASSWORD=111333
+SECRET_KEY='django-insecure-5!@(1#jwja4*pmu@0t2@r$!m8*g!tftwuotz4a527mqz99-u12'
+DEBUG=True
+ALLOWED_HOSTS='158.160.69.22,127.0.0.1,localhost,taskikiski.hopto.org,*'
+NGINX_PORT=80
 ```
 Сохранить содержимое ctrl+O, ctrl+x. 
 
