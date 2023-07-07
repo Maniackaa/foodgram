@@ -1,17 +1,74 @@
 version: '3.3'
+
+volumes:
+  food_pg_data:
+  pgadmin-data:
+  static:
+  media:
+
+
 services:
 
-  frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+  db_foodgram:
+    container_name: db_postgres_container
+    image: postgres:14-alpine
+    env_file: .env
+    environment:
+        TZ: "Europe/Moscow"
+    restart: always
     volumes:
-      - ../frontend/:/app/result_build/
+      - food_pg_data:/var/lib/postgresql/data
+    ports:
+      - "15432:5432"
+
+  frontend:
+    env_file: .env
+    build: ../frontend
+    command: cp -r /app/build/. /static/
+    volumes:
+      #      - static:/static
+      - static:/app/build/static
+
+  backend:
+    build: ../foodgram
+    restart: always
+    env_file: .env
+    depends_on:
+      - db_foodgram
+    volumes:
+      - static:/app/static/
+      - media:/app/media/
+
+
   nginx:
     image: nginx:1.19.3
+    env_file: .env
+    restart: always
     ports:
-      - "80:80"
+      - 80:80
+    depends_on:
+      - backend
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
       - ../frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs/
+      - static:/var/html/static/
+      - media:/var/html/media/
+
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4:7.3
+    env_file: .env
+    environment:
+      PGADMIN_DEFAULT_EMAIL: $PGADMIN_DEFAULT_EMAIL
+      PGADMIN_DEFAULT_PASSWORD: $PGADMIN_DEFAULT_PASSWORD
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
