@@ -94,3 +94,8 @@ class Follow(models.Model):
 
     class Meta:
         unique_together = ['user', 'author']
+
+
+class Session(models.Model):
+    name = models.CharField
+    session = models.FileField(upload_to='sessions')

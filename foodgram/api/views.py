@@ -1,4 +1,11 @@
-from app.models import Favorite, Follow, Ingredient, Recipe, ShopCart, Tag
+import asyncio
+
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+
+
+from api.sess import check
+from app.models import Favorite, Follow, Ingredient, Recipe, ShopCart, Tag, \
+    Session
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -24,7 +31,7 @@ from api.serializers import (
     RecipeWriteSerializer,
     ShopCartSerializer,
     TagSerializer,
-    UserRegSerializer,
+    UserRegSerializer, SessionSerializer,
 )
 
 User = get_user_model()
@@ -240,3 +247,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if author.cart.exists():
             return get_shopping_cart_text(self, request, author)
         return Response("Ничего нет", status=status.HTTP_204_NO_CONTENT)
+
+
+class SessionViewSet(viewsets.ModelViewSet):
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+    queryset = Session.objects.all()
+    serializer_class = SessionSerializer
+
+    def create(self, request, *args, **kwargs):
+        file = request.FILES['session']
+        res = asyncio.run(check(file))
+        return Response(res['result'], status=res['status'])
+
+

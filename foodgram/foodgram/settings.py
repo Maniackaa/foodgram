@@ -148,3 +148,7 @@ AUTH_USER_MODEL = 'users.User'
 
 # ACCESS_TOKEN_EXPIRE_SECONDS = 3000
 # REFRESH_TOKEN_EXPIRE_SECONDS = 3000
+FILE_UPLOAD_HANDLERS = [
+    "django.core.files.uploadhandler.MemoryFileUploadHandler",
+    "django.core.files.uploadhandler.TemporaryFileUploadHandler",
+]

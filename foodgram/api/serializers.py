@@ -6,7 +6,7 @@ from app.models import (
     IngredientInRecipe,
     Recipe,
     ShopCart,
-    Tag,
+    Tag, Session,
 )
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import (
@@ -384,3 +384,11 @@ class FollowSerializer(serializers.ModelSerializer):
                 code=status.HTTP_400_BAD_REQUEST,
             )
         return attrs
+
+
+class SessionSerializer(serializers.ModelSerializer):
+    session = serializers.FileField()
+
+    class Meta:
+        model = Session
+        fields = ('id', 'session')
