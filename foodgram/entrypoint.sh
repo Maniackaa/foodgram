@@ -1,2 +1,2 @@
 #!/bin/bash
-gunicorn --bind 0.0.0.0:8000 foodgram.wsgi
+gunicorn --bind 0.0.0.0:$GUNICORN_PORT foodgram.wsgi

@@ -5,23 +5,23 @@ from users.managers import UserManager
 
 
 class User(AbstractUser):
-    USER = 'user'
-    ADMIN = 'admin'
+    USER = "user"
+    ADMIN = "admin"
     ROLES = (
-        (USER, 'Пользователь'),
-        (ADMIN, 'Администратор'),
+        (USER, "Пользователь"),
+        (ADMIN, "Администратор"),
     )
 
     first_name = models.CharField(
-        verbose_name='Имя',
+        verbose_name="Имя",
         max_length=30,
     )
     last_name = models.CharField(
-        verbose_name='Фамилия',
+        verbose_name="Фамилия",
         max_length=150,
     )
     email = models.EmailField(
-        verbose_name='Email-адрес',
+        verbose_name="Email-адрес",
     )
 
     role = models.CharField(
@@ -33,14 +33,14 @@ class User(AbstractUser):
     objects = UserManager()
 
     class Meta:
-        verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Пользователи"
 
     @property
     def get_full_name(self):
         full_name = self.username
         if self.first_name and self.last_name:
-            full_name = f'{self.first_name} {self.last_name}'
+            full_name = f"{self.first_name} {self.last_name}"
         return full_name
 
     @property
@@ -54,20 +54,20 @@ class User(AbstractUser):
 
 class Profile(models.Model):
     user = models.OneToOneField(
-        verbose_name='Пользователь', to=User, on_delete=models.CASCADE
+        verbose_name="Пользователь", to=User, on_delete=models.CASCADE
     )
     first_name = models.CharField(
-        verbose_name='Имя',
+        verbose_name="Имя",
         max_length=30,
     )
     last_name = models.CharField(
-        verbose_name='Фамилия',
+        verbose_name="Фамилия",
         max_length=150,
     )
     email = models.EmailField(
-        verbose_name='Email-адрес',
+        verbose_name="Email-адрес",
     )
 
     class Meta:
-        verbose_name = 'Профиль пользователя'
-        verbose_name_plural = 'Профили пользователей'
+        verbose_name = "Профиль пользователя"
+        verbose_name_plural = "Профили пользователей"

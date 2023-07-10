@@ -4,21 +4,28 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.filters import SearchFilter
 from rest_framework.generics import CreateAPIView
-from rest_framework.pagination import (LimitOffsetPagination,
-                                       PageNumberPagination)
+from rest_framework.pagination import (
+    LimitOffsetPagination,
+    PageNumberPagination,
+)
 from rest_framework.permissions import SAFE_METHODS, AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from api.filters import RecipeFilter
+from api.filters import RecipeFilter, IngredientSearch
 from api.func import get_shopping_cart_text
 from api.permission import ForUsers, IsOwnerOrAdmin
-from api.serializers import (ChangePassSerializer, FavoriteSerializer,
-                             FollowSerializer, IngredientSerializer,
-                             RecipeSerilizer, RecipeWriteSerializer,
-                             ShopCartSerializer, TagSerializer,
-                             UserRegSerializer)
+from api.serializers import (
+    ChangePassSerializer,
+    FavoriteSerializer,
+    FollowSerializer,
+    IngredientSerializer,
+    RecipeSerilizer,
+    RecipeWriteSerializer,
+    ShopCartSerializer,
+    TagSerializer,
+    UserRegSerializer,
+)
 
 User = get_user_model()
 
@@ -28,10 +35,12 @@ class ApiPagination(PageNumberPagination):
     page_size = 6
 
 
-class UsersViewSet(mixins.CreateModelMixin,
-                   mixins.ListModelMixin,
-                   mixins.RetrieveModelMixin,
-                   viewsets.GenericViewSet):
+class UsersViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet,
+):
     serializer_class = UserRegSerializer
     queryset = User.objects.all()
     permission_classes = (AllowAny, ForUsers)
@@ -43,61 +52,74 @@ class UsersViewSet(mixins.CreateModelMixin,
         return Response(serializer.data)
 
     @action(
-        methods=['GET'],
+        methods=["GET"],
         detail=False,
-        permission_classes=(IsAuthenticated, IsOwnerOrAdmin,),
-        url_path='me',)
+        permission_classes=(
+            IsAuthenticated,
+            IsOwnerOrAdmin,
+        ),
+        url_path="me",
+    )
     def current_user_profile(self, request):
         serializer = UserRegSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(
-        methods=['GET'],
+        methods=["GET"],
         detail=False,
         permission_classes=(IsAuthenticated, IsOwnerOrAdmin),
-        url_path='set_password',)
+        url_path="set_password",
+    )
     def change_password(self, request):
         serializer = ChangePassSerializer(request.user, data=request.data)
         if serializer.is_valid(raise_exception=True):
-            return Response({'Result': 'Пароль успешно изменен'},
-                            status=status.HTTP_204_NO_CONTENT)
+            return Response(
+                {"Result": "Пароль успешно изменен"},
+                status=status.HTTP_204_NO_CONTENT,
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(
-        methods=['GET'],
+        methods=["GET"],
         detail=False,
         permission_classes=(IsAuthenticated,),
-        )
+    )
     def subscriptions(self, request):
         follows = Follow.objects.filter(user=self.request.user)
         pages = self.paginate_queryset(follows)
-        serializer = FollowSerializer(pages,
-                                      many=True,
-                                      context={'request': request})
+        serializer = FollowSerializer(
+            pages, many=True, context={"request": request}
+        )
         return self.get_paginated_response(serializer.data)
 
-    @action(detail=True,
-            methods=['POST', 'DELETE'],
-            permission_classes=[IsAuthenticated])
+    @action(
+        detail=True,
+        methods=["POST", "DELETE"],
+        permission_classes=[IsAuthenticated],
+    )
     def subscribe(self, request, *args, **kwargs):
-        author = get_object_or_404(User, id=self.kwargs.get('pk'))
+        author = get_object_or_404(User, id=self.kwargs.get("pk"))
         user = self.request.user
-        if request.method == 'POST':
+        if request.method == "POST":
             serializer = FollowSerializer(
                 data=request.data,
-                context={'request': request, 'author': author})
+                context={"request": request, "author": author},
+            )
             if serializer.is_valid(raise_exception=True):
                 serializer.save(author=author, user=user)
-                return Response({'Подписка!': serializer.data},
-                                status=status.HTTP_201_CREATED)
-            return Response({'errors': 'Не найдено'},
-                            status=status.HTTP_404_NOT_FOUND)
+                return Response(
+                    {"Подписка!": serializer.data},
+                    status=status.HTTP_201_CREATED,
+                )
+            return Response(
+                {"errors": "Не найдено"}, status=status.HTTP_404_NOT_FOUND
+            )
         if Follow.objects.filter(author=author, user=user).exists():
             Follow.objects.get(author=author).delete()
-            return Response('Отписка!',
-                            status=status.HTTP_204_NO_CONTENT)
-        return Response({'errors': 'Не найдено'},
-                        status=status.HTTP_404_NOT_FOUND)
+            return Response("Отписка!", status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {"errors": "Не найдено"}, status=status.HTTP_404_NOT_FOUND
+        )
 
 
 class RegView(CreateAPIView):
@@ -108,27 +130,23 @@ class RegView(CreateAPIView):
         return super().post(request, *args, **kwargs)
 
 
-class TagsViewSet(mixins.ListModelMixin,
-                  mixins.RetrieveModelMixin,
-                  viewsets.GenericViewSet):
+class TagsViewSet(
+    mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet
+):
     serializer_class = TagSerializer
     queryset = Tag.objects.all()
-    permission_classes = (AllowAny, )
+    permission_classes = (AllowAny,)
     pagination_class = None
 
 
-class IngredientSearch(SearchFilter):
-    search_param = 'name'
-
-
-class IngredientViewSet(mixins.ListModelMixin,
-                        mixins.RetrieveModelMixin,
-                        viewsets.GenericViewSet):
+class IngredientViewSet(
+    mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet
+):
     serializer_class = IngredientSerializer
     queryset = Ingredient.objects.all()
-    permission_classes = (AllowAny, )
+    permission_classes = (AllowAny,)
     filter_backends = [IngredientSearch]
-    search_fields = ['name']
+    search_fields = ["name"]
     pagination_class = None
 
 
@@ -136,8 +154,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerilizer
     pagination_class = LimitOffsetPagination
-    filter_backends = [DjangoFilterBackend,
-                       ]
+    filter_backends = [
+        DjangoFilterBackend,
+    ]
     filterset_class = RecipeFilter
 
     def get_serializer_class(self):
@@ -145,65 +164,79 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeSerilizer
         return RecipeWriteSerializer
 
-    @action(detail=True, methods=['POST', 'DELETE'],
-            permission_classes=[IsAuthenticated])
+    @action(
+        detail=True,
+        methods=["POST", "DELETE"],
+        permission_classes=[IsAuthenticated],
+    )
     def favorite(self, request, *args, **kwargs):
-        recipe = get_object_or_404(Recipe, id=self.kwargs.get('pk'))
+        recipe = get_object_or_404(Recipe, id=self.kwargs.get("pk"))
         user = self.request.user
-        if request.method == 'POST':
-            if Favorite.objects.filter(author=user,
-                                       recipe=recipe).exists():
-                return Response({'errors': 'Рецепт уже в избранном!'},
-                                status=status.HTTP_400_BAD_REQUEST)
+        if request.method == "POST":
+            if Favorite.objects.filter(author=user, recipe=recipe).exists():
+                return Response(
+                    {"errors": "Рецепт уже в избранном!"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             serializer = FavoriteSerializer(data=request.data)
             if serializer.is_valid(raise_exception=True):
                 serializer.save(author=user, recipe=recipe)
-                return Response(serializer.data,
-                                status=status.HTTP_201_CREATED)
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    serializer.data, status=status.HTTP_201_CREATED
+                )
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
         # Если DELETE
-        if not Favorite.objects.filter(author=user,
-                                       recipe=recipe).exists():
-            return Response({'errors': 'Объект не найден'},
-                            status=status.HTTP_404_NOT_FOUND)
+        if not Favorite.objects.filter(author=user, recipe=recipe).exists():
+            return Response(
+                {"errors": "Объект не найден"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         Favorite.objects.get(author=user, recipe=recipe).delete()
-        return Response('Рецепт удалён из избранного.',
-                        status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            "Рецепт удалён из избранного.", status=status.HTTP_204_NO_CONTENT
+        )
 
-    @action(detail=True,
-            methods=['POST', 'DELETE'],
-            permission_classes=[IsAuthenticated])
+    @action(
+        detail=True,
+        methods=["POST", "DELETE"],
+        permission_classes=[IsAuthenticated],
+    )
     def shopping_cart(self, request, **kwargs):
-        recipe = get_object_or_404(Recipe, id=self.kwargs.get('pk'))
+        recipe = get_object_or_404(Recipe, id=self.kwargs.get("pk"))
         user = self.request.user
-        if request.method == 'POST':
-            if ShopCart.objects.filter(author=user,
-                                       recipe=recipe).exists():
-                return Response({'errors': 'Рецепт уже в корзине!'},
-                                status=status.HTTP_400_BAD_REQUEST)
+        if request.method == "POST":
+            if ShopCart.objects.filter(author=user, recipe=recipe).exists():
+                return Response(
+                    {"errors": "Рецепт уже в корзине!"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             serializer = ShopCartSerializer(data=request.data)
             if serializer.is_valid(raise_exception=True):
                 serializer.save(author=user, recipe=recipe)
-                return Response(serializer.data,
-                                status=status.HTTP_201_CREATED)
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    serializer.data, status=status.HTTP_201_CREATED
+                )
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
         # Если DELETE
-        if not ShopCart.objects.filter(author=user,
-                                       recipe=recipe).exists():
-            return Response({'errors': 'Рецепт не найден'},
-                            status=status.HTTP_404_NOT_FOUND)
+        if not ShopCart.objects.filter(author=user, recipe=recipe).exists():
+            return Response(
+                {"errors": "Рецепт не найден"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         ShopCart.objects.get(recipe=recipe).delete()
-        return Response('Рецепт удалён из корзины.',
-                        status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            "Рецепт удалён из корзины.", status=status.HTTP_204_NO_CONTENT
+        )
 
-    @action(detail=False,
-            methods=['GET'],
-            permission_classes=[IsAuthenticated])
+    @action(
+        detail=False, methods=["GET"], permission_classes=[IsAuthenticated]
+    )
     def download_shopping_cart(self, request):
         author = User.objects.get(id=self.request.user.pk)
         if author.cart.exists():
             return get_shopping_cart_text(self, request, author)
-        return Response('Ничего нет',
-                        status=status.HTTP_204_NO_CONTENT)
+        return Response("Ничего нет", status=status.HTTP_204_NO_CONTENT)

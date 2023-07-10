@@ -1,11 +1,11 @@
 ## Проект Foodgram
 
-Проект позволяет просматривать рецепты и добавлять свои 
+Проект позволяет просматривать рецепты и добавлять свои.
 
 
 ### Использованные технологии
 
-Django, Django REST Framework, Node.js
+Django 4.2.2, Django REST Framework 3.14.0, Node.js
 
 
 ### Установка и запуск проекта: 
@@ -45,6 +45,15 @@ NGINX_PORT=80
 ```
 docker compose-up -d
 ```
+Выполнить миграции:
+```
+docker compose exec backend python manage.py migrate
+```
+Выполнить добавление ингредиентов в бвзу:
+```
+docker compose exec backend python manage.py import_data
+```
+
 
 # Об авторе
 ### Об авторе.

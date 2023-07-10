@@ -4,7 +4,6 @@ from django.contrib.auth.models import UserManager as DefaultUserManager
 
 
 class UserManager(DefaultUserManager):
-
     def _create_user(self, username, email, password, **extra_fields):
         """
         Create and save a user with the given username, email, and password.
@@ -24,10 +23,11 @@ class UserManager(DefaultUserManager):
         user.save(using=self._db)
 
         from users.models import Profile
+
         Profile.objects.create(
             user=user,
             first_name=user.first_name,
             last_name=user.last_name,
-            email=email
+            email=email,
         )
         return user

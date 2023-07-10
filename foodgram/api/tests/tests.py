@@ -15,21 +15,23 @@ class StaticURLTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user = User.objects.create_user(username='test_user')
-        cls.tag = Tag.objects.create(name="Завтрак", color="#E26C2D",
-                                     slug="breakfast")
-        cls.ingredient = Ingredient.objects.create(name='Картошка',
-                                                   measurement_unit='г')
+        cls.user = User.objects.create_user(username="test_user")
+        cls.tag = Tag.objects.create(
+            name="Завтрак", color="#E26C2D", slug="breakfast"
+        )
+        cls.ingredient = Ingredient.objects.create(
+            name="Картошка", measurement_unit="г"
+        )
         cls.recipe = Recipe.objects.create(
-            name='Тестовый рецепт',
+            name="Тестовый рецепт",
             author=cls.user,
             image="data:image/png;base64,iVBORg==",
-            text='Описание',
+            text="Описание",
             cooking_time=10,
-            )
+        )
         cls.ingredient_in_recipe = IngredientInRecipe.objects.create(
-            recipe=cls.recipe,
-            ingredient=cls.ingredient, amount=100)
+            recipe=cls.recipe, ingredient=cls.ingredient, amount=100
+        )
         cls.recipe.tags.add(cls.tag)
 
     def setUp(self):
@@ -40,18 +42,18 @@ class StaticURLTests(TestCase):
     def test_urls_get_for_guest(self):
         """Проверка доступа неавторизованного пользователя"""
         url_names_guest = {
-            '/api/':            HTTPStatus.OK,
-            '/api/users/':      HTTPStatus.OK,
-            '/api/users/1/':    HTTPStatus.UNAUTHORIZED,
-            '/api/users/me/':   HTTPStatus.UNAUTHORIZED,
-            '/api/tags/':       HTTPStatus.OK,
-            '/api/tags/1/':     HTTPStatus.OK,
-            '/api/recipes/':    HTTPStatus.OK,
-            '/api/recipes/1/':  HTTPStatus.OK,
-            '/api/recipes/download_shopping_cart/': HTTPStatus.UNAUTHORIZED,
-            '/api/users/subscriptions/': HTTPStatus.UNAUTHORIZED,
-            '/api/ingredients/': HTTPStatus.OK,
-            '/api/ingredients/1/': HTTPStatus.OK,
+            "/api/": HTTPStatus.OK,
+            "/api/users/": HTTPStatus.OK,
+            "/api/users/1/": HTTPStatus.UNAUTHORIZED,
+            "/api/users/me/": HTTPStatus.UNAUTHORIZED,
+            "/api/tags/": HTTPStatus.OK,
+            "/api/tags/1/": HTTPStatus.OK,
+            "/api/recipes/": HTTPStatus.OK,
+            "/api/recipes/1/": HTTPStatus.OK,
+            "/api/recipes/download_shopping_cart/": HTTPStatus.UNAUTHORIZED,
+            "/api/users/subscriptions/": HTTPStatus.UNAUTHORIZED,
+            "/api/ingredients/": HTTPStatus.OK,
+            "/api/ingredients/1/": HTTPStatus.OK,
         }
         for url, status in url_names_guest.items():
             with self.subTest(url=url):
@@ -62,18 +64,18 @@ class StaticURLTests(TestCase):
     def test_urls_get_for_authorized(self):
         """Проверка доступа авторизованного пользователя"""
         url_names_user = {
-            '/api/':            HTTPStatus.OK,
-            '/api/users/':      HTTPStatus.OK,
-            '/api/users/1/':    HTTPStatus.OK,
-            '/api/users/me/':   HTTPStatus.OK,
-            '/api/tags/':       HTTPStatus.OK,
-            '/api/tags/1/':     HTTPStatus.OK,
-            '/api/recipes/':    HTTPStatus.OK,
-            '/api/recipes/1/':  HTTPStatus.OK,
-            '/api/recipes/download_shopping_cart/': HTTPStatus.NO_CONTENT,
-            '/api/users/subscriptions/': HTTPStatus.OK,
-            '/api/ingredients/': HTTPStatus.OK,
-            '/api/ingredients/1/': HTTPStatus.OK,
+            "/api/": HTTPStatus.OK,
+            "/api/users/": HTTPStatus.OK,
+            "/api/users/1/": HTTPStatus.OK,
+            "/api/users/me/": HTTPStatus.OK,
+            "/api/tags/": HTTPStatus.OK,
+            "/api/tags/1/": HTTPStatus.OK,
+            "/api/recipes/": HTTPStatus.OK,
+            "/api/recipes/1/": HTTPStatus.OK,
+            "/api/recipes/download_shopping_cart/": HTTPStatus.NO_CONTENT,
+            "/api/users/subscriptions/": HTTPStatus.OK,
+            "/api/ingredients/": HTTPStatus.OK,
+            "/api/ingredients/1/": HTTPStatus.OK,
         }
         for url, status in url_names_user.items():
             with self.subTest(url=url):

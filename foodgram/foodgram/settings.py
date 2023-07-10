@@ -2,16 +2,16 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = ('django-insecure-^%$s5q2rk'
-              '(r#&#79*o8tp7h3(__ych6#&$(v980f=mup-9(v_$')
-DEBUG = True
-
-ALLOWED_HOSTS = ['*']
-CSRF_TRUSTED_ORIGINS = ['https://*.mydomain.com', 'https://*.127.0.0.1',
-                        'http://localhost']
-
 load_dotenv()
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+SECRET_KEY = os.getenv('SECRET_KEY')
+DEBUG = (os.getenv('DEBUG', 'False').lower() == 'true')
+
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
+# CSRF_TRUSTED_ORIGINS = ['https://*.127.0.0.1',
+#                         'http://localhost']
+
 
 MY_APPS = [
     'users.apps.UsersConfig',
