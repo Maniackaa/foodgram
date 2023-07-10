@@ -58,7 +58,6 @@ class StaticURLTests(TestCase):
         for url, status in url_names_guest.items():
             with self.subTest(url=url):
                 response = self.guest_client.get(url)
-                print(response.data)
                 self.assertEqual(response.status_code, status)
 
     def test_urls_get_for_authorized(self):
