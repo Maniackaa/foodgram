@@ -1,4 +1,15 @@
 import rest_framework.pagination
+from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
+from django.core.validators import EmailValidator
+from django.db import transaction
+from drf_extra_fields.fields import Base64ImageField
+from rest_framework import serializers, status
+from rest_framework.exceptions import ValidationError
+from rest_framework.fields import CurrentUserDefault
+from rest_framework.validators import UniqueValidator
+
+from api.permission import IsOwnerOrAdmin
 from app.models import (
     Favorite,
     Follow,
@@ -8,23 +19,6 @@ from app.models import (
     ShopCart,
     Tag,
 )
-from django.contrib.auth import get_user_model
-from django.contrib.auth.password_validation import (
-    validate_password,
-)
-from django.core.validators import EmailValidator
-from django.core.validators import (
-    ValidationError as DjangoValidationError,
-)
-from django.db import transaction
-from drf_extra_fields.fields import Base64ImageField
-from rest_framework import serializers, status
-from rest_framework.exceptions import ValidationError
-from rest_framework.fields import CurrentUserDefault
-from rest_framework.serializers import as_serializer_error
-from rest_framework.validators import UniqueValidator
-
-from api.permission import IsOwnerOrAdmin
 
 User = get_user_model()
 
@@ -53,27 +47,9 @@ class UserRegSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("id", "email")
 
-    def validate(self, attrs: dict):
-        print("validate", attrs)
-        if attrs.get("password") == "123456":
-            raise ValidationError()
-        return attrs
-
-    def run_validation(self, *args, **kwargs):
-        try:
-            print("run_validation", *args, **kwargs)
-            return super().run_validation(*args, **kwargs)
-        except (
-            ValidationError,
-            DjangoValidationError,
-        ) as exc:
-            print("Ошибки валидации (ValidationError, DjangoValidationError)")
-            raise ValidationError(detail=as_serializer_error(exc))
-        except Exception as exc:
-            print("Критическая ошибка при валидации")
-            raise ValidationError(detail=as_serializer_error(exc))
-
-    @transaction.atomic
+    # И у тебя ModelSerializer, поэтому вообще метод create сомнителен
+    # А как тогда мы заставим выполнить create_user, захэшировать пароль
+    # и создать профиль?
     def create(self, validated_data):
         print("Create")
         user = User.objects.create_user(
@@ -245,11 +221,9 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         ingredients = super().to_representation(instance)
-        print("in ingredients", ingredients)
         ingredients["ingredients"] = IngredientInRecipeSerializer(
             instance.components.all(), many=True
         ).data
-        print("out ingredients:", ingredients)
         return ingredients
 
     @transaction.atomic
@@ -260,10 +234,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         for ingredient_in_recipe in ingredients:
             ingredient = ingredient_in_recipe["id"]
             amount = ingredient_in_recipe["amount"]
-            (
-                obj,
-                res,
-            ) = IngredientInRecipe.objects.get_or_create(
+            IngredientInRecipe.objects.get_or_create(
                 recipe=recipe,
                 ingredient=ingredient,
                 amount=amount,
@@ -279,10 +250,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         for ingredient_in_recipe in ingredients:
             ingredient = ingredient_in_recipe["id"]
             amount = ingredient_in_recipe["amount"]
-            (
-                obj,
-                res,
-            ) = IngredientInRecipe.objects.update_or_create(
+            IngredientInRecipe.objects.update_or_create(
                 recipe=instance,
                 ingredient=ingredient,
                 amount=amount,

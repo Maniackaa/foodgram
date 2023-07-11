@@ -1,19 +1,17 @@
-from app.models import Favorite, Follow, Ingredient, Recipe, ShopCart, Tag
+from django.http import HttpResponse
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import CreateAPIView
-from rest_framework.pagination import (
-    LimitOffsetPagination,
-    PageNumberPagination,
-)
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import SAFE_METHODS, AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from api.filters import RecipeFilter, IngredientSearch
 from api.func import get_shopping_cart_text
+from api.paginators import ApiPagination
 from api.permission import ForUsers, IsOwnerOrAdmin
 from api.serializers import (
     ChangePassSerializer,
@@ -26,13 +24,9 @@ from api.serializers import (
     TagSerializer,
     UserRegSerializer,
 )
+from app.models import Favorite, Follow, Ingredient, Recipe, ShopCart, Tag
 
 User = get_user_model()
-
-
-class ApiPagination(PageNumberPagination):
-    page_size_query_param = "limit"
-    page_size = 6
 
 
 class UsersViewSet(
@@ -238,5 +232,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def download_shopping_cart(self, request):
         author = User.objects.get(id=self.request.user.pk)
         if author.cart.exists():
-            return get_shopping_cart_text(self, request, author)
+            text = get_shopping_cart_text(self, request, author)
+            response = HttpResponse(
+                text, content_type="text/plain", status=status.HTTP_200_OK)
+            return response
         return Response("Ничего нет", status=status.HTTP_204_NO_CONTENT)

@@ -13,6 +13,7 @@ class ForUsers(permissions.BasePermission):
             and request.method in permissions.SAFE_METHODS
         ):
             return True
+        return False
 
 
 class IsOwnerOrAdmin(permissions.BasePermission):

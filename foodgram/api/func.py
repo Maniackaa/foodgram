@@ -1,8 +1,6 @@
-from rest_framework import status
+from django.db.models import Sum
 
 from app.models import IngredientInRecipe
-from django.db.models import Sum
-from django.http import HttpResponse
 
 
 def get_shopping_cart_text(self, request, author):
@@ -26,14 +24,12 @@ def get_shopping_cart_text(self, request, author):
             for recipes_name in recipes_names
         ]
     )
-    text = f'Ингридиенты для рецептов {", ".join(names)}:\n\n'
+    names_str = ", ".join(names)
+    text = f'Ингридиенты для рецептов {names_str}:\n\n'
     for num, component in enumerate(total_in_recipes, 1):
         text += (
             f'{num}) {component["ingredient__name"]}: '
             f'{component["amounts"]} '
             f'{component["ingredient__measurement_unit"]}\n'
         )
-    response = HttpResponse(
-        text, content_type="text/plain", status=status.HTTP_200_OK
-    )
-    return response
+    return text
