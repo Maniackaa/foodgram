@@ -6,6 +6,7 @@ from django.http import HttpResponse
 
 
 def get_shopping_cart_text(self, request, author):
+    print("get_shopping_cart_text")
     total_in_recipes = (
         IngredientInRecipe.objects.filter(recipe__cart__author=author)
         .values(

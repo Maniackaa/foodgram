@@ -54,6 +54,7 @@ class UserRegSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "email")
 
     def validate(self, attrs: dict):
+        print("validate", attrs)
         if attrs.get("password") == "123456":
             raise ValidationError()
         return attrs
@@ -74,6 +75,7 @@ class UserRegSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
+        print("Create")
         user = User.objects.create_user(
             username=validated_data["username"],
             email=validated_data["email"],
@@ -243,9 +245,11 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         ingredients = super().to_representation(instance)
+        print("in ingredients", ingredients)
         ingredients["ingredients"] = IngredientInRecipeSerializer(
             instance.components.all(), many=True
         ).data
+        print("out ingredients:", ingredients)
         return ingredients
 
     @transaction.atomic
