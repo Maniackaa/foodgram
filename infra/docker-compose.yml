@@ -12,7 +12,7 @@ services:
   db_foodgram:
     container_name: db_postgres_container
     image: postgres:14-alpine
-    env_file: .env
+    env_file: ../.env
     environment:
         TZ: "Europe/Moscow"
     restart: always
@@ -22,7 +22,7 @@ services:
       - "15432:5432"
 
   frontend:
-    env_file: .env
+    env_file: ../.env
     build: ../frontend
     command: cp -r /app/build/. /static/
     volumes:
@@ -31,7 +31,7 @@ services:
   backend:
     build: ../foodgram
     restart: always
-    env_file: .env
+    env_file: ../.env
     depends_on:
       - db_foodgram
     volumes:
@@ -41,7 +41,7 @@ services:
 
   nginx:
     image: nginx:1.19.3
-    env_file: .env
+    env_file: ../.env
     restart: always
     ports:
       - 80:80
@@ -57,7 +57,7 @@ services:
   pgadmin:
     container_name: pgadmin_container
     image: dpage/pgadmin4:7.3
-    env_file: .env
+    env_file: ../.env
     environment:
       PGADMIN_DEFAULT_EMAIL: $PGADMIN_DEFAULT_EMAIL
       PGADMIN_DEFAULT_PASSWORD: $PGADMIN_DEFAULT_PASSWORD

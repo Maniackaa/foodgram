@@ -45,11 +45,17 @@ NGINX_PORT=80
 ```
 docker compose-up -d
 ```
+Выполнить сбор статики:
+```
+docker compose exec backend python manage.py collectstatic
+```
+
 Выполнить миграции:
 ```
+docker compose exec backend python manage.py makemigrations
 docker compose exec backend python manage.py migrate
 ```
-Выполнить добавление ингредиентов в бвзу:
+Выполнить добавление ингредиентов в базу:
 ```
 docker compose exec backend python manage.py import_data
 ```
